@@ -130,23 +130,6 @@ def test_pg_schema() -> str:
     return f"当前PG_SCHEMA的值为: {PG_SCHEMA}"
 
 if __name__ == "__main__":
-    import threading
-    from flask import Flask
-    import os
 
-    # 启动一个最简单的 Flask HTTP 服务
-    def run_http_server():
-        app = Flask(__name__)
-
-        @app.route("/")
-        def index():
-            return "MCP Bot Server is running!"
-
-        port = int(os.environ.get("PORT", 8000))  # Render会自动注入PORT
-        app.run(host="0.0.0.0", port=port)
-
-    # 用线程启动 HTTP 服务，不影响原有的 mcp.run
-    threading.Thread(target=run_http_server, daemon=True).start()
-
-    # 启动原有的 MCP 服务
+    # Initialize and run the server
     mcp.run(transport='sse')
