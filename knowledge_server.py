@@ -11,7 +11,7 @@ from psycopg2 import sql
 load_dotenv()
 
 # Initialize FastMCP server
-mcp = FastMCP("knowledge")
+mcp = FastMCP("knowledge", port=8001)
 
 
 # PostgreSQL 连接配置（请根据实际情况修改）
@@ -131,4 +131,4 @@ def test_pg_schema() -> str:
 
 if __name__ == "__main__":
     # Initialize and run the server
-    mcp.run(transport='stdio')
+    mcp.run(transport='sse')
