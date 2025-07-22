@@ -114,23 +114,13 @@ def get_table_metadata() -> str:
         all_meta["Can_Shu_BiaokKKtzpA1l5_param_combinations"] = param_list
 
         # 增加一段说明文字
-        all_meta["description"] = "1）任何查表操作都需要带上schema名。 2）由于数据库必须用双引号包裹schema名.表名，才可以区分大小写，所以请记得添加双引号。"
+        all_meta["description"] = "1）任何查表操作都需要带上schema名。 2）由于数据库必须用双引号包裹才可以区分大小写，所以请记得在schema名、表名、字段名上添加双引号。"
 
         cur.close()
         conn.close()
         return json.dumps(all_meta, ensure_ascii=False, indent=2)
     except Exception as e:
         return f"获取元数据出错: {str(e)}"
-
-@mcp.tool()
-def test_pg_schema() -> str:
-    """
-    测试数据库连接并输出当前PG_SCHEMA的值。
-
-    Returns:
-        PG_SCHEMA的具体值
-    """
-    return f"当前PG_SCHEMA的值为: {PG_SCHEMA}"
 
 if __name__ == "__main__":
 
