@@ -113,6 +113,9 @@ def get_table_metadata() -> str:
         # 结果中增加参数组合信息
         all_meta["Can_Shu_BiaokKKtzpA1l5_param_combinations"] = param_list
 
+        # 增加一段说明文字
+        all_meta["description"] = "1）任何查表操作都需要带上schema名。 2）由于数据库必须用双引号包裹schema名.表名，才可以区分大小写，所以请记得添加双引号。"
+
         cur.close()
         conn.close()
         return json.dumps(all_meta, ensure_ascii=False, indent=2)
