@@ -114,7 +114,7 @@ def get_table_metadata() -> str:
         all_meta["Can_Shu_BiaokKKtzpA1l5_param_combinations"] = param_list
 
         # 增加一段说明文字
-        all_meta["description"] = "1）任何查表操作都需要带上schema名。 2）由于数据库必须用双引号包裹才可以区分大小写，所以请记得在schema名、表名、字段名上添加双引号。"
+        all_meta["description"] = "1）任何查表操作都需要带上schema名：[" + PG_SCHEMA + "]。 2）由于数据库必须用双引号包裹才可以区分大小写，所以请记得在schema名、表名、字段名上添加双引号。"
 
         cur.close()
         conn.close()
