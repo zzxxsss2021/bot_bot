@@ -11,7 +11,7 @@ from psycopg2 import sql
 load_dotenv()
 
 # Initialize FastMCP server
-mcp = FastMCP("knowledge", port=8001)
+mcp = FastMCP("knowledge", port='0.0.0.0', port=8001)
 
 
 # PostgreSQL 连接配置（请根据实际情况修改）
