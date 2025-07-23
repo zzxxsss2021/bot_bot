@@ -20,7 +20,6 @@ PG_PORT = int(os.getenv("PG_PORT"))
 PG_USER = os.getenv("PG_USER")
 PG_PASSWORD = os.getenv("PG_PASSWORD")
 PG_DATABASE = os.getenv("PG_DATABASE")
-PG_SCHEMA = os.getenv("PG_SCHEMA")
 
 @mcp.tool()
 def query_postgresql(sql: str) -> str:
@@ -55,14 +54,11 @@ def query_postgresql(sql: str) -> str:
 @mcp.tool()
 def get_table_metadata() -> str:
     """
-    获取固定三张 PostgreSQL 表的元数据信息（字段名、类型等），
-    并对 Can_Shu_BiaokKKtzpA1l5 表的 Can_Shu_Ming_Cheng 和 Ying_Wen_Can_Shu_Ming_Cheng 字段做 group by 查询。
-
+    获取 PostgreSQL 表 product 的元数据信息（字段名、类型等），并查询 product_parameter_metadata 表的全部数据。
     Returns:
-        所有表的元数据信息和参数组合 JSON 字符串，或错误信息
+        表的元数据信息、product_parameter_metadata表数据和说明文字 JSON 字符串，或错误信息
     """
-    table_names = ["production", "Mai_Dian_BiaoQGCqj7xkbM", "Can_Shu_BiaokKKtzpA1l5"]
-    schema = PG_SCHEMA if PG_SCHEMA else "public"
+    table_name = "product"  # 只查一张表
     try:
         conn = psycopg2.connect(
             host=PG_HOST,
@@ -73,49 +69,32 @@ def get_table_metadata() -> str:
         )
         cur = conn.cursor()
         all_meta = {}
-        for table_name in table_names:
-            cur.execute("""
-                SELECT column_name, data_type, is_nullable, column_default
-                FROM information_schema.columns
-                WHERE table_schema = %s AND table_name = %s
-                ORDER BY ordinal_position
-            """, (schema, table_name))
-            columns = cur.fetchall()
-            meta = [
-                {
-                    "column_name": col[0],
-                    "data_type": col[1],
-                    # "is_nullable": col[2],
-                    # "column_default": col[3]
-                }
-                for col in columns
-            ]
-            all_meta[table_name] = meta
-
-        # 对 Can_Shu_BiaokKKtzpA1l5 表做 group by 查询（带 schema，安全拼接）
-        query = sql.SQL("""
-            SELECT "Can_Shu_Ming_Cheng", "Ying_Wen_Can_Shu_Ming_Cheng"
-            FROM {}.{}
-            GROUP BY "Can_Shu_Ming_Cheng", "Ying_Wen_Can_Shu_Ming_Cheng"
-        """).format(
-            sql.Identifier(schema),
-            sql.Identifier("Can_Shu_BiaokKKtzpA1l5")
+        # 查询 product 表元数据
+        cur.execute(
+            """
+            SELECT column_name, data_type
+            FROM information_schema.columns
+            WHERE table_name = %s
+            """,
+            (table_name,)
         )
-        cur.execute(query)
-        param_combinations = cur.fetchall()
-        param_list = [
+        columns = cur.fetchall()
+        meta = [
             {
-                "Can_Shu_Ming_Cheng": row[0],
-                "Ying_Wen_Can_Shu_Ming_Cheng": row[1]
+                "column_name": col[0],
+                "data_type": col[1]
             }
-            for row in param_combinations
+            for col in columns
         ]
-        # 结果中增加参数组合信息
-        all_meta["Can_Shu_BiaokKKtzpA1l5_param_combinations"] = param_list
-
+        all_meta[table_name] = meta
+        # 查询 product_parameter_metadata 表全部数据
+        cur.execute("SELECT * FROM product_parameter_metadata")
+        rows = cur.fetchall()
+        columns = [desc[0] for desc in cur.description]
+        param_data = [dict(zip(columns, row)) for row in rows]
+        all_meta["product_parameter_metadata_data"] = param_data
         # 增加一段说明文字
-        all_meta["description"] = "1）任何查表操作都需要带上schema名：[" + PG_SCHEMA + "]。 2）由于数据库必须用双引号包裹才可以区分大小写，请在所有schema名、表名、字段名上添加双引号。3）遇到困难时记得使用模糊查询"
-
+        all_meta["description"] = "这里可以写字"
         cur.close()
         conn.close()
         return json.dumps(all_meta, ensure_ascii=False, indent=2)
